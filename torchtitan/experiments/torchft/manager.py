@@ -227,12 +227,32 @@ def maybe_semi_sync_training(
 
             # Create the outer optimizer based on the inner optimizer parameters.
             outer_optimizers = []
-            for model in model_parts:
-                params = [p for p in model.parameters() if p.requires_grad]
-                outer_optimizer = torch.optim.SGD(
-                    params, lr=0.7, momentum=0.9, nesterov=True
+            from os import getenv
+
+            if str(getenv("ENABLE_COMPRESSLOCO")) == "1":
+                from CompressLoCo.optimizer import CompressLoCoOptim, compressloco
+
+                compressloco.init(
+                    model_parts, global_process_group=ft_manager._manager._pg
                 )
-                outer_optimizers.append(outer_optimizer)
+                for model in model_parts:
+                    params = [p for p in model.named_parameters() if p[1].requires_grad]
+                    outer_optimizer = CompressLoCoOptim(
+                        params,
+                        lr=0.7,
+                        momentum=0.9,
+                        nesterov=True,
+                        process_group=ft_manager._manager._pg,
+                    )
+                    outer_optimizers.append(outer_optimizer)
+            # ENABLE_COMPRESSLOCO = 0
+            else:
+                for model in model_parts:
+                    params = [p for p in model.parameters() if p.requires_grad]
+                    outer_optimizer = torch.optim.SGD(
+                        params, lr=0.7, momentum=0.9, nesterov=True
+                    )
+                    outer_optimizers.append(outer_optimizer)
 
             return local_sgd.DiLoCo(
                 manager=ft_manager._manager,

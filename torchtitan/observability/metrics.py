@@ -550,9 +550,49 @@ class MetricsProcessor(Configurable):
 
         device_mem_stats = self.device_memory_monitor.get_peak_stats()
 
+        from CompressLoCo.optimizer import compressloco
+
         metrics = {
             "loss_metrics/global_avg_loss": global_avg_loss,
             "loss_metrics/global_max_loss": global_max_loss,
+            "compression/sparsification_overlap(%):": compressloco.get_metric(
+                "sparsification_overlap"
+            ),
+            "compression/step_bandwidth(Mbit/s)": compressloco.get_metric(
+                "step_bandwidth"
+            ),
+            "compression/exchanged_data(Bytes)": compressloco.get_metric(
+                "exchanged_data"
+            ),
+            "compression/cosine_similarity (AVG)": compressloco.get_metric(
+                "cosine_similarity"
+            ),
+            "compression/step_calculation_time (ms)": compressloco.get_metric(
+                "step_calculation_time_ms"
+            ),
+            "compression/step_sync_time (ms)": compressloco.get_metric(
+                "step_sync_time_ms"
+            ),
+            "compression/grad_abs_magnitude (AVG)": compressloco.get_metric(
+                "grad_abs_magnitude"
+            ),
+            "compression/sync_grad_abs_magnitude (AVG)": compressloco.get_metric(
+                "sync_grad_abs_magnitude"
+            ),
+            "compression/error_1_abs_magnitude (AVG)": compressloco.get_metric(
+                "error_1_abs_magnitude"
+            ),
+            "compression/error_2_abs_magnitude (AVG)": compressloco.get_metric(
+                "error_2_abs_magnitude"
+            ),
+            "compression/total_gradient (SUM)": compressloco.get_metric(
+                "total_gradient"
+            ),
+            "compression/total_count (NUMEL)": compressloco.get_metric("total_count"),
+            "compression/synced_gradient (SUM)": compressloco.get_metric(
+                "synced_gradient"
+            ),
+            "compression/synced_count (NUMEL)": compressloco.get_metric("synced_count"),
             "grad_norm": grad_norm,
             "throughput(tps)": tps,
             "tflops": tflops,
